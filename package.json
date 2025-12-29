@@ -1,0 +1,26 @@
+{
+  "name": "groovy",
+  "version": "1.0.0",
+  "description": "TA run npm init -y npm install -D tailwindcss postcss autoprefixer and install pakage flask torch numpy nltk",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MIstamiAlfariski/TA_1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MIstamiAlfariski/TA_1/issues"
+  },
+  "homepage": "https://github.com/MIstamiAlfariski/TA_1#readme"
+}
