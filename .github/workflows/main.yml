@@ -1,1 +1,63 @@
 
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Ambil source code
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      # Step 2: Login ke DockerHub
+      - name: Login DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 3: Build & Push Docker image
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ahmadzulfadli/application-private:paroid-chatboot-latest, ahmadzulfadli/application-private:paroid-chatboot-${{ github.ref_name }}
+
+      # Step 4: Clean up old images on Docker Hub
+      - name: Clean up old images (paroid-chatboot only)
+        run: |
+          REPO="ahmadzulfadli/application-private"
+          SERVICE="paroid-chatboot"
+          LIMIT=5
+
+          TOKEN=$(curl -s -H "Content-Type: application/json" \
+            -X POST -d '{"username": "${{ secrets.DOCKER_USERNAME }}", "password": "${{ secrets.DOCKER_PASSWORD }}"}' \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+          # Ambil list tags hanya untuk service ini, kecuali 'latest'
+          TAGS=$(curl -s -H "Authorization: JWT $TOKEN" \
+            "https://hub.docker.com/v2/repositories/$REPO/tags/?page_size=100" \
+            | jq -r '.results | .[]?.name' \
+            | grep "^${SERVICE}" \
+            | grep -v "latest" || true)
+
+          COUNT=$(echo "$TAGS" | wc -l)
+          echo "Total $SERVICE images: $COUNT"
+
+          if [ $COUNT -gt $LIMIT ]; then
+            DELETE_TAGS=$(echo "$TAGS" | sort | head -n $(($COUNT-$LIMIT)))
+            for TAG in $DELETE_TAGS; do
+              echo "Deleting $TAG ..."
+              curl -s -X DELETE -H "Authorization: JWT $TOKEN" \
+                "https://hub.docker.com/v2/repositories/$REPO/tags/$TAG/"
+            done
+          else
+            echo "Tidak ada image yang perlu dihapus."
+          fi
