@@ -1,7 +1,7 @@
 console.log('Script loaded!');
 
 // API Configuration
-const API_URL = 'http://127.0.0.1:5000/get';
+const API_URL = '/get';
 
 /**
  * Check if device is mobile
