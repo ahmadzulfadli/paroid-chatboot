@@ -1,8 +1,8 @@
-FROM python:3.12-alpine
+FROM python:3.12
 WORKDIR /app
-RUN apk add --no-cache gcc musl-dev g++ gfortran openblas-dev
-COPY requirements_docker.txt requirements.txt
+RUN pip install --upgrade pip
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 EXPOSE 5000
-CMD ["gunicorn", "--config", "gunicorn-cfg.py", "run:app"]
+CMD ["gunicorn", "-c", "gunicorn-cfg.py", "run:app"]
