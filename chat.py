@@ -10,17 +10,17 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 print("[INFO] Loading Keras Model & Artifacts...")
 
 # Load Model Bi-LSTM (Path Anda)
-model = load_model('/home/riss/TA_1/model/chat_model.h5')
+model = load_model('model/chat_model.h5')
 
 # Load Tokenizer & Encoder (Path Anda)
-with open('/home/riss/TA_1/tokenizer/tokenizers.pkl', 'rb') as f:
+with open('tokenizer/tokenizers.pkl', 'rb') as f:
     tokenizer = pickle.load(f)
 
-with open('/home/riss/TA_1/tokenizer/le.pkl', 'rb') as f:
+with open('tokenizer/le.pkl', 'rb') as f:
     le = pickle.load(f)
 
 # Load Database Jawaban (JSON)
-with open('/home/riss/TA_1/dataset/datahseet.json', 'r') as f:
+with open('dataset/datahseet.json', 'r') as f:
     intents = json.load(f)
 
 # Simpan respon dalam dictionary agar pencarian cepat
