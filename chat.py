@@ -6,37 +6,53 @@ import random
 import re
 from fractions import Fraction
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model
+from pathlib import Path
 
 # ==========================================
-# 1. INISIALISASI MODEL (Berjalan saat file di-import)
+# 1. KONFIGURASI PATH DINAMIS (Pathlib)
+# ==========================================
+# Mendapatkan direktori root project (TA_1)
+BASE_DIR = Path(__file__).resolve().parent
+
+# Mendefinisikan lokasi file secara relatif terhadap BASE_DIR
+MODEL_PATH = BASE_DIR / "model" / "faraidh_model_final.h5"
+TOKENIZER_PATH = BASE_DIR / "tokenizer" / "tokenizer.pickle"
+ENCODER_PATH = BASE_DIR / "tokenizer" / "label_encoder.pickle"  # Disarankan dipisah
+DATASET_PATH = BASE_DIR / "dataset" / "faraidh_dataset.json"
+
+# ==========================================
+# 2. INISIALISASI MODEL & ARTIFACTS
 # ==========================================
 print("🔄 [Engine] Sedang memuat Model AI & Dictionary...")
 
 try:
-    # Load Model & Artifacts
-    model = tf.keras.models.load_model(r'/home/riss/TA_1/model/faraidh_model_final.h5')
+    # Load Model Keras
+    model = load_model(str(MODEL_PATH))
     
-    with open(r'/home/riss/TA_1/tokenizer/tokenizer.pickle', 'rb') as handle:
+    # Load Tokenizer
+    with open(TOKENIZER_PATH, 'rb') as handle:
         tokenizer = pickle.load(handle)
         
-    with open(r'/home/riss/TA_1/tokenizer/tokenizer.pickle', 'rb') as handle:
+    # Load Label Encoder 
+    # Pastikan file ini ada, jika label encoder digabung di tokenizer.pickle, 
+    # sesuaikan kembali ke TOKENIZER_PATH
+    with open(ENCODER_PATH, 'rb') as handle:
         lbl_encoder = pickle.load(handle)
     
     # Load Dataset untuk Response Teks
-    with open(r'/home/riss/TA_1/dataset/faraidh_dataset.json', 'r') as f:
+    with open(DATASET_PATH, 'r') as f:
         data_source = json.load(f)
         responses_lookup = {i['tag']: i['responses'] for i in data_source['intents']}
         
-    print("✅ [Engine] Model & Data Berhasil Dimuat!")
+    print(f"✅ [Engine] Berhasil dimuat dari: {BASE_DIR}")
 
 except Exception as e:
     print(f"❌ [Engine Error] Gagal load file: {e}")
-    print("   Pastikan file .h5, .pickle, dan .json ada di satu folder.")
-    # Kita set variabel penting ke None agar tidak crash saat import, tapi akan error saat dipakai
     model, tokenizer, lbl_encoder, responses_lookup = None, None, None, {}
 
 # ==========================================
-# 2. CLASS CALCULATOR (Engine Matematika)
+# 3. CLASS CALCULATOR (Engine Matematika)
 # ==========================================
 class FaraidhCalculator:
     def __init__(self):
@@ -53,13 +69,13 @@ class FaraidhCalculator:
         active = heirs.copy()
         if 'anak_laki' in active:
             for h in ['cucu_laki', 'cucu_perempuan', 'saudara_kandung', 'saudara_seayah', 'saudara_seibu', 'paman_kandung']:
-                if h in active: del active[h]
+                if h in active: active.pop(h, None)
         if 'ayah' in active:
             for h in ['kakek', 'saudara_seibu', 'saudara_kandung', 'saudara_seayah', 'paman_kandung']:
-                if h in active: del active[h]
+                if h in active: active.pop(h, None)
         if 'ibu' in active:
             for h in ['nenek_ibu', 'nenek_ayah']:
-                if h in active: del active[h]
+                if h in active: active.pop(h, None)
         return active
 
     def run_calculation(self, total_harta, heirs_count):
@@ -69,7 +85,7 @@ class FaraidhCalculator:
         
         has_descendant = any(x in active_heirs for x in ['anak_laki', 'anak_perempuan', 'cucu_laki'])
         
-        # --- LOGIKA BAGIAN PASTI ---
+        # --- LOGIKA BAGIAN PASTI (Ashabul Furud) ---
         if 'suami' in active_heirs:
             share = Fraction(1, 4) if has_descendant else Fraction(1, 2)
             shares['suami'] = share; total_share_fraction += share
@@ -103,15 +119,12 @@ class FaraidhCalculator:
         elif 'ayah' in active_heirs and 'anak_laki' not in active_heirs and 'cucu_laki' not in active_heirs:
             shares['ayah'] = shares.get('ayah', Fraction(0,1)) + remaining
 
-        # --- FORMAT OUTPUT ---
         final_report = []
         for heir, frac in shares.items():
             if frac > 0:
                 count = active_heirs.get(heir, 1)
                 nominal = float(frac) * total_harta
                 percentage = float(frac) * 100
-                
-                # Format Rupiah
                 nominal_str = f"Rp {nominal:,.0f}".replace(",", ".")
                 
                 final_report.append({
@@ -123,11 +136,10 @@ class FaraidhCalculator:
                 })
         return final_report
 
-# Inisialisasi Engine di sini
 engine = FaraidhCalculator()
 
 # ==========================================
-# 3. HELPER FUNCTIONS (Parser)
+# 4. HELPER FUNCTIONS & BOT LOGIC
 # ==========================================
 def parse_nominal_harta(text):
     text = text.lower().replace('.', '').replace(',', '.')
@@ -138,127 +150,82 @@ def parse_nominal_harta(text):
     raw = re.findall(r"(\d{6,})", text)
     return int(raw[0]) if raw else 0
 
-
 heir_synonyms = {
-    'anak_laki': [
-        'anak laki', 'anak cowok', 'putra', 'lk', 'anak lk', 
-        'anak pria', 'pria', 'laki-laki', 'laki'  # <--- TAMBAHAN BARU
-    ],
-    'anak_perempuan': [
-        'anak perempuan', 'anak cewek', 'putri', 'pr', 'anak pr', 
-        'anak wanita', 'wanita', 'perempuan', 'gadis' # <--- TAMBAHAN BARU
-    ],
+    'anak_laki': ['anak laki', 'anak cowok', 'putra', 'lk', 'anak lk', 'anak pria', 'pria', 'laki-laki', 'laki'],
+    'anak_perempuan': ['anak perempuan', 'anak cewek', 'putri', 'pr', 'anak pr', 'anak wanita', 'wanita', 'perempuan', 'gadis'],
     'ibu': ['ibu', 'bunda', 'mamak', 'umi'], 
     'ayah': ['ayah', 'bapak', 'abi', 'papa'],
     'suami': ['suami', 'pasangan pria'], 
     'istri': ['istri', 'pasangan wanita'], 
     'saudara_kandung': ['saudara', 'kakak', 'adik']
 }
+
 def parse_kasus_waris(text):
     text = text.lower()
     detected = {}
-    
-    # 1. Deteksi Format "Angka + Nama" (Contoh: "3 anak pria")
     for key, syns in heir_synonyms.items():
         for s in syns:
-            # PERBAIKAN: Menambahkan \b di akhir agar tidak salah baca
-            # (Misal: mencegah 'pr' terbaca di dalam kata 'pria')
             pattern = r"(\b\d{1,2}\b)\s*" + re.escape(s) + r"\b" 
             matches = re.findall(pattern, text)
             for count in matches: 
                 detected[key] = detected.get(key, 0) + int(count)
     
-    # 2. Deteksi Nama Saja (Contoh: "ada ibu") -> Asumsi 1 orang
     for key, syns in heir_synonyms.items():
         if key not in detected:
             for s in syns:
-                # Cek kata utuh dengan spasi di kiri/kanan atau awal/akhir kalimat
                 pattern_single = r"\b" + re.escape(s) + r"\b"
                 if re.search(pattern_single, text): 
                     detected[key] = 1
                     break
     return detected
-# Cari bagian ini di faraidh_engine.py
+
 keyword_map = {
     "pembunuh": "hukum_waris_pembunuh", 
     "ibu": "rincian_bagian_ibu",
     "ayah": "rincian_bagian_ayah", 
     "faraidh": "definisi_ilmu_waris",
-    
-    # --- TAMBAHAN BARU DI SINI ---
-    "sebatang kara": "sebatang_kara",
-    "tidak punya": "sebatang_kara",
-    "sendiri": "sebatang_kara"
+    "sebatang kara": "sebatang_kara"
 }
 
-# ==========================================
-# 4. FUNGSI UTAMA (REVISI LOGIKA FILTER)
-# ==========================================
 def get_bot_response(text):
-    """
-    Fungsi utama yang dipanggil oleh app.py untuk mendapatkan jawaban bot
-    Updated: Menambahkan filter ketat untuk pertanyaan di luar konteks.
-    """
-    
     if model is None:
-        return {"type": "text", "message": "Error: Model AI belum dimuat dengan benar."}
+        return {"type": "text", "message": "Error: Model AI belum dimuat."}
 
     text_lower = text.lower()
-    
-    # Preprocessing Typo
     for k, v in {"faridh": "faraidh", "jelasin": "jelaskan", "brp": "berapa"}.items(): 
         text_lower = text_lower.replace(k, v)
 
-    # ---------------------------------------------------------
-    # LAYER 1: CEK HITUNGAN (MATEMATIKA)
-    # ---------------------------------------------------------
-    # Kita cek apakah user ingin menghitung (ada angka + kata kunci hitung/harta)
+    # LAYER 1: Perhitungan Matematika
     if (any(c.isdigit() for c in text_lower) and 
        ("hitung" in text_lower or "harta" in text_lower or "waris" in text_lower)):
-        
         data_waris = parse_kasus_waris(text_lower)
         harta = parse_nominal_harta(text_lower)
-        harta_used = harta if harta > 0 else 100
+        harta_used = harta if harta > 0 else 0
         
-        # Hanya masuk ke mode hitung jika minimal ada 1 ahli waris terdeteksi
         if len(data_waris) > 0:
             try:
                 result = engine.run_calculation(harta_used, data_waris)
                 return {"type": "calculation", "data": result, "total_harta": harta_used}
-            except: 
-                pass # Jika gagal hitung, lempar ke AI
+            except: pass
 
-    # ---------------------------------------------------------
-    # LAYER 2: CEK KEYWORD PASTI (RULE BASED)
-    # ---------------------------------------------------------
-    # Ini untuk menangkap kata kunci spesifik agar tidak meleset
+    # LAYER 2: Rule Based
     for k, tag in keyword_map.items():
         if k in text_lower and tag in responses_lookup:
             return {"type": "text", "message": random.choice(responses_lookup[tag])}
 
-    # ---------------------------------------------------------
-    # LAYER 3: AI PREDICTION (DEEP LEARNING)
-    # ---------------------------------------------------------
+    # LAYER 3: AI Prediction
     seq = tokenizer.texts_to_sequences([text_lower])
     padded = pad_sequences(seq, maxlen=25)
-    
-    # Prediksi Probabilitas
     pred = model.predict(padded, verbose=0)
     
-    # Ambil Skor Keyakinan Tertinggi (0.0 sampai 1.0)
     confidence_score = np.max(pred)
     tag_index = np.argmax(pred)
     tag = lbl_encoder.inverse_transform([tag_index])[0]
     
-    print(f"DEBUG: Input='{text}' | Prediksi='{tag}' | Score={confidence_score:.4f}")
-
-    # --- FILTER OUT OF CONTEXT ---
-    # Jika keyakinan bot di bawah 70% (0.7), anggap bot tidak tahu.
     if confidence_score < 0.70:
         return {
             "type": "text", 
-            "message": "Maaf, saya hanya dilatih untuk menjawab seputar Hukum Waris Islam (Faraidh). Mohon tanyakan hal yang relevan."
+            "message": "Maaf, saya hanya dilatih untuk menjawab seputar Hukum Waris Islam (Faraidh)."
         }
     
-    # Jika lolos filter, berikan jawaban dari dataset
     return {"type": "text", "message": random.choice(responses_lookup[tag])}
