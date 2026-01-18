@@ -77,36 +77,49 @@
     <!-- Header End -->
 
     <!-- Hero Section Start -->
-    <section id="home" class="pt-36 dark:bg-dark">
-      <div class="container">
-        <div class="flex flex-wrap">
-          <div class="w-full self-center px-4 lg:w-1/2">
-            <h1 class="text-base font-semibold text-primary md:text-xl">Assalamualaikum 👏, saya <span class="mt-1 block text-4xl font-bold text-dark dark:text-white lg:text-5xl">Islamic Knowledge</span></h1>
-            <h2 class="mb-5 text-lg font-medium text-secondary lg:text-2xl dark:text-slate-300">MUI Kab.Kampar | <span class="text-dark dark:text-white">UIN Suska Riau</span></h2>
-            <p class="mb-10 font-medium leading-relaxed text-secondary dark:text-white">Website ini di buat untuk memberikan informasi terkait event yang telah di jalankan ataupun yang belum di jalankan, di sini kamu menyediakan chatbot untuk teman teman mencari informasi terkait Islam</p>
-            <a href="{{ url_for('chatbot') }}"
-            class="rounded-full bg-primary py-3 px-8 text-base font-semibold text-white transition duration-300 ease-in-out hover:opacity-80 hover:shadow-lg">Hubungi
-            Kami</a>
+    <section id="home" class="pt-36 pb-32 dark:bg-dark overflow-hidden">
+  <div class="container">
+    <div class="flex flex-wrap items-center">
+      
+      <div class="w-full self-center px-4 lg:w-1/2">
+        <h1 class="text-base font-semibold text-teal-500 md:text-xl">
+          Assalamualaikum 👏, saya 
+          <span class="mt-1 block text-4xl font-bold text-dark dark:text-white lg:text-5xl">
+            Islamic Knowledge
+          </span>
+        </h1>
+        
+        <h2 class="mb-5 text-lg font-medium text-secondary lg:text-2xl dark:text-slate-300">
+          MUI Kab.Kampar | <span class="text-dark dark:text-white">UIN Suska Riau</span>
+        </h2>
+        
+        <p class="mb-10 font-medium leading-relaxed text-secondary dark:text-gray-300 max-w-md">
+          Website ini dibuat untuk memberikan informasi terkait event yang telah dan akan dijalankan. 
+          Kami menyediakan <strong>Chatbot AI</strong> untuk membantu teman-teman mencari informasi dan hukum waris Islam dengan mudah.
+        </p>
+        
+        <a href="{{ url_for('aaa') }}" class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-teal-500 to-emerald-600 py-3 px-8 text-base font-semibold text-white transition duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:from-teal-400 hover:to-emerald-500">
+          💬 Mulai Konsultasi Waris
+        </a>
+      </div>
 
-          </div>
-          <div class="w-full z-10 self-end px-4 lg:w-1/2">
-            <div class="relative mt-10 lg:right-0 lg:mt-9">
-              <div class="flex items-center">             
-              <img src="{{ url_for('static', filename='images/MUI_x_Islamic_Knowladge-removebg-preview.png') }}" alt="logo" class="relative z-10  mx-auto max-w-full"  />
-              <span class="absolute bottom-0 top-0 left-1/2  -translate-x-1/2 md:scale-125">
-                <svg width="400" height="400" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    fill="#14b8a6"
-                    d="M47.4,-51C59.2,-35.6,65.1,-17.8,63.4,-1.7C61.7,14.5,52.6,28.9,40.8,36.6C28.9,44.2,14.5,45,-2,47C-18.4,49,-36.8,52.1,-45.4,44.5C-53.9,36.8,-52.5,18.4,-51.2,1.3C-49.9,-15.8,-48.7,-31.7,-40.2,-47.1C-31.7,-62.4,-15.8,-77.3,1,-78.3C17.8,-79.2,35.6,-66.3,47.4,-51Z"
-                    transform="translate(100 100) scale(1.1)"
-                  />
-                </svg> 
-              </span>
-            </div>
-          </div>
+      <div class="w-full self-center px-4 lg:w-1/2 mt-10 lg:mt-0">
+        <div class="relative flex justify-center items-center z-10">
+          
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-teal-500 rounded-full blur-[80px] opacity-40 animate-pulse"></div>
+          
+          <img 
+            src="{{ url_for('static', filename='images/MUI_x_Islamic_Knowladge-removebg-preview.png') }}" 
+            alt="Logo Islamic Knowledge" 
+            class="relative z-20 mx-auto max-w-full w-full lg:max-w-md drop-shadow-2xl transform hover:scale-105 transition duration-500" 
+          />
+          
         </div>
       </div>
-    </section>
+
+    </div>
+  </div>
+</section>
     <!-- Hero Section End -->
     
 
@@ -141,7 +154,7 @@
 
               <!-- Instagram -->
               <a
-                href="https://www.instagram.com/muikampar/"
+                href="https://www.instagram.com/muikabupatenkampar/"
                 target="_blank"
                 class="mr-3 flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-slate-300 hover:border-primary hover:bg-primary hover:text-white"
               >
@@ -440,6 +453,6 @@
       <script>
         $SCRIPT_ROOT = {{ request.script_root|tojson }};
     </script>
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="{{ url_for('static', filename='/js/scripts.js') }}"></script>
   </body>
 </html>
